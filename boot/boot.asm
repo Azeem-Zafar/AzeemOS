@@ -8,9 +8,7 @@ start:
     MOV ES, AX
     MOV SS, AX
     MOV SP, 0x7C00
-    STI
 
-    ; Kernel load karo 0x0000:0x1000 pe
     MOV AH, 0x02
     MOV AL, 0x20
     MOV CH, 0x00
@@ -52,8 +50,8 @@ protected_mode:
     MOV GS, AX
     MOV SS, AX
     MOV ESP, 0x90000
-    ; kernel_main 0x1000 + 0x414 = 0x1414
-    JMP 0x1D31
+    JMP 0x1bd6
+    
 
 TIMES 510-($-$$) db 0
 DW 0xAA55

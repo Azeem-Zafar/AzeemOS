@@ -59,21 +59,6 @@ char get_key() {
     return 0;
 }
 
-// String copy
-void str_copy(char* dst, char* src) {
-    int i = 0;
-    while(src[i] != 0) { dst[i] = src[i]; i++; }
-    dst[i] = 0;
-}
-
-// String length
-int str_len(char* str) {
-    int i = 0;
-    while(str[i] != 0) i++;
-    return i;
-}
-
-// Compare first n chars
 int str_starts(char* str, char* prefix) {
     int i = 0;
     while(prefix[i] != 0) {
@@ -83,7 +68,6 @@ int str_starts(char* str, char* prefix) {
     return 1;
 }
 
-// Compare strings
 int str_equal(char* a, char* b) {
     int i = 0;
     while(a[i] != 0 && b[i] != 0) {
@@ -97,41 +81,30 @@ char input_buffer[256];
 int buf_pos = 0;
 
 void compare_and_run(char* cmd) {
-    // help
     if(str_equal(cmd, "help")) {
         print_string("Commands:\n", 0x1E);
-        print_string("  help              - yeh message\n", 0x1F);
-        print_string("  clear             - screen saaf karo\n", 0x1F);
-        print_string("  name              - developer info\n", 0x1F);
-        print_string("  version           - OS version\n", 0x1F);
-        print_string("  list              - sab files dikhao\n", 0x1F);
-        print_string("  create <file>     - file banao\n", 0x1F);
-        print_string("  write <file> <text> - file mein likho\n", 0x1F);
-        print_string("  read <file>       - file padho\n", 0x1F);
-        print_string("  delete <file>     - file hatao\n", 0x1F);
+        print_string("  help, clear, name, version\n", 0x1F);
+        print_string("  list, create, read, write, delete\n", 0x1F);
+        print_string("  meminfo, alloc\n", 0x1F);
         return;
     }
-    // clear
     if(str_equal(cmd, "clear")) {
         clear_screen();
-        print_at("AzeemOS v0.4", 0, 0, 0x1E);
+        print_at("AzeemOS v0.5", 0, 0, 0x1E);
         cursor_row = 2;
         cursor_col = 0;
         return;
     }
-    // name
     if(str_equal(cmd, "name")) {
         print_string("Banaya: Azeem Zafar\n", 0x1B);
         print_string("Pakistan ka pehla OS developer!\n", 0x1A);
         return;
     }
-    // version
     if(str_equal(cmd, "version")) {
-        print_string("AzeemOS v0.4 - File System Edition\n", 0x1E);
+        print_string("AzeemOS v0.5\n", 0x1E);
         print_string("Built from scratch in Assembly + C\n", 0x1F);
         return;
     }
-    // list
     if(str_equal(cmd, "list")) {
         int i, found = 0;
         print_string("Files:\n", 0x1E);
@@ -143,49 +116,38 @@ void compare_and_run(char* cmd) {
                 found++;
             }
         }
-        if(!found) print_string("  Koi file nahi hai!\n", 0x1C);
+        if(!found) print_string("  Koi file nahi!\n", 0x1C);
         return;
     }
-    // create <filename>
     if(str_starts(cmd, "create ")) {
         char* fname = cmd + 7;
         int result = fs_create(fname);
         if(result >= 0) {
-            print_string("File bana di: ", 0x1A);
+            print_string("File bani: ", 0x1A);
             print_string(fname, 0x1F);
             print_string("\n", 0x1F);
         } else {
-            print_string("Error: File nahi bani!\n", 0x1C);
+            print_string("Error!\n", 0x1C);
         }
         return;
     }
-    // read <filename>
     if(str_starts(cmd, "read ")) {
         char* fname = cmd + 5;
         char* data = fs_read(fname);
         if(data) {
-            print_string("Content: ", 0x1E);
             print_string(data, 0x1F);
             print_string("\n", 0x1F);
         } else {
-            print_string("Error: File nahi mili!\n", 0x1C);
+            print_string("File nahi mili!\n", 0x1C);
         }
         return;
     }
-    // delete <filename>
     if(str_starts(cmd, "delete ")) {
         char* fname = cmd + 7;
-        int result = fs_delete(fname);
-        if(result == 0) {
-            print_string("File delete ho gayi: ", 0x1A);
-            print_string(fname, 0x1F);
-            print_string("\n", 0x1F);
-        } else {
-            print_string("Error: File nahi mili!\n", 0x1C);
-        }
+        fs_delete(fname);
+        print_string("Deleted!\n", 0x1A);
         return;
     }
-    // write <filename> <text>
     if(str_starts(cmd, "write ")) {
         char fname[32];
         char* rest = cmd + 6;
@@ -196,25 +158,17 @@ void compare_and_run(char* cmd) {
         }
         fname[i] = 0;
         char* text = rest + i + 1;
-        int result = fs_write(fname, text);
-        if(result == 0) {
-            print_string("Likha gaya: ", 0x1A);
-            print_string(fname, 0x1F);
-            print_string("\n", 0x1F);
-        } else {
-            print_string("Error: Likh nahi saka!\n", 0x1C);
-        }
+        fs_write(fname, text);
+        print_string("Likha gaya!\n", 0x1A);
         return;
     }
-
     if(str_equal(cmd, "meminfo")) {
         char buf[12];
-        print_string("Memory Info:\n", 0x1E);
-        print_string("  Used: ", 0x1F);
+        print_string("Used: ", 0x1F);
         int_to_str(mm_get_used(), buf);
         print_string(buf, 0x1A);
         print_string(" bytes\n", 0x1F);
-        print_string("  Free: ", 0x1F);
+        print_string("Free: ", 0x1F);
         int_to_str(mm_get_free(), buf);
         print_string(buf, 0x1A);
         print_string(" bytes\n", 0x1F);
@@ -229,15 +183,11 @@ void compare_and_run(char* cmd) {
             i++;
         }
         void* ptr = kmalloc(size);
-        if(ptr) {
-            print_string("Allocated successfully!\n", 0x1A);
-        } else {
-            print_string("Error: Not enough memory!\n", 0x1C);
-        }
+        if(ptr) print_string("Allocated!\n", 0x1A);
+        else print_string("Error!\n", 0x1C);
         return;
     }
-
-    print_string("Command nahi pehchana! \'help\' type karo\n", 0x1C);
+    print_string("Command nahi pehchana!\n", 0x1C);
 }
 
 void process_input() {
@@ -251,14 +201,14 @@ void process_input() {
 void kernel_main() {
     fs_init();
     mm_init();
+
     clear_screen();
     print_at("===================================================", 0, 0, 0x1E);
-    print_at("      AZEEM OS v0.4 - FILE SYSTEM EDITION         ", 0, 1, 0x1F);
-    print_at("      Banaya: Azeem Zafar  |  Pakistan            ", 0, 2, 0x1B);
+    print_at("         AZEEM OS v0.5  |  Pakistan               ", 0, 1, 0x1F);
+    print_at("         Banaya: Azeem Zafar                       ", 0, 2, 0x1B);
     print_at("===================================================", 0, 3, 0x1E);
     cursor_row = 5;
     cursor_col = 0;
-    print_string("File System ready!\n", 0x1A);
     print_string("Type 'help' for commands\n", 0x1F);
     print_string("\n> ", 0x1A);
 
